@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.board.mvc.web.reply.repository.ReplyMapper">
+
+    <!--    // 댓글 저장 기능-->
+    <!--    void saveReply(Reply reply);-->
+    <insert id="saveReply">
+        INSERT INTO reply
+        (reply_no, board_no, writer, user_name, content, reply_date)
+        VALUES
+        (seq_reply.nextval, #{boardNo}, #{writer}, #{userName}, #{content}, sysdate)
+    </insert>
+
+    <!--    // 댓글 삭제 기능-->
+    <!--    void deleteReply(int replyNo);-->
+    <delete id="deleteReply">
+        DELETE FROM reply WHERE reply_no = #{replyNo}
+    </delete>
+
+    <!--    // 댓글 수정 기능-->
+    <!--    void changeReply(Reply reply);-->
+    <update id="changeReply">
+        UPDATE reply
+        SET content = #{content}
+        WHERE reply_no = #{replyNo}
+        AND board_no = #{boardNo}
+    </update>
+
+
+    <resultMap id="replyMap" type="com.board.mvc.web.reply.domain.Reply">
+        <result property="replyNo" column="reply_no"/>
+        <result property="boardNo" column="board_no"/>
+        <result property="replyDate" column="reply_date"/>
+        <result property="userName" column="user_name" />
+    </resultMap>
+
+
+    <!--    // 단일 댓글 조회 기능-->
+    <!--    Reply findOneReply(int replyNo);-->
+    <select id="findOneReply" resultMap="replyMap">
+        SELECT * FROM reply WHERE reply_no = #{replyNo}
+    </select>
+
+
+    <!--    // 전체 댓글 조회 기능-->
+    <!--    List<Reply> findAllReply(int boardNo);-->
+    <select id="findAllReply" resultMap="replyMap">
+        SELECT * FROM reply
+        WHERE board_no = #{boardNo}
+    </select>
+
+</mapper>

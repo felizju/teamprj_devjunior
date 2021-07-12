@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.board.mvc.web.users.repository.UserMapper">
+
+    <!--    // 회원 가입 기능-->
+    <!--    void register(User user);-->
+    <insert id="register">
+        INSERT INTO users
+        (user_id, user_pw, user_name)
+        VALUES
+        (#{userId}, #{userPw}, #{userName})
+    </insert>
+
+    <!--    // 회원 탈퇴 기능-->
+    <!--    void withdraw(String userId);-->
+    <delete id="withdraw">
+        DELETE FROM users WHERE user_id = #{userId}
+    </delete>
+
+    <resultMap id="userMap" type="com.board.mvc.web.users.domain.User">
+        <result property="userId" column="user_id"/>
+        <result property="userPw" column="user_pw"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <!--    // 전체 회원 조회 기능-->
+    <!--    List<User> findAllUser();-->
+    <!--    가입일 정렬은 추후에 이름순, 가입일 순 등으로 나눌 수 있음-->
+    <select id="findAllUser" resultMap="userMap">
+        SELECT * FROM users
+    </select>
+
+    <!--    // 단일 회원 조회 기능-->
+    <!--    User findOneUser(String userId);-->
+    <select id="findOneUser" resultMap="userMap">
+        SELECT * FROM users WHERE user_id = #{userId}
+    </select>
+    <!--    // 회원 정보 수정 기능-->
+    <!--    void changeUser(TempUser tempUser);-->
+    <update id="changeUser">
+        UPDATE users
+        SET user_pw = #{userPw},
+        user_name = #{userName}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

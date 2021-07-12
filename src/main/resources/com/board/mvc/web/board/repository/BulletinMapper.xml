@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.board.mvc.web.board.repository.BulletinMapper">
+
+    <!-- 게시글 등록하기 -->
+    <insert id="insertArticle">
+        INSERT INTO bulletin (board_no, writer, user_name, title, content, post_time)
+        VALUES(seq_board.nextval, #{writer}, #{userName}, #{title}, #{content}, sysdate)
+    </insert>
+
+
+    <!-- 게시글 삭제하기 -->
+    <delete id="deleteArticle">
+        DELETE FROM bulletin
+        WHERE board_no = #{boardNo}
+    </delete>
+
+
+
+    <resultMap id="bulletinMap" type="com.board.mvc.web.board.domain.Bulletin">
+        <result property="boardNo" column="board_no"/>
+        <result property="viewCnt" column="views"/>
+        <result property="postTime" column="post_time"/>
+        <result property="userName" column="user_name" />
+    </resultMap>
+
+    <!-- 게시글 전체 보기 -->
+    <!-- <select id="getArticles" resultMap="bulletinMap">
+        SELECT * FROM bulletin
+    </select> -->
+
+    <!-- 게시글 전체 보기 - paging 처리 -->
+    <select id="getArticles" resultMap="bulletinMap">
+        <![CDATA[
+        SELECT
+            board_no, writer, user_name, title, post_time, views, recommend
+        FROM
+            (SELECT  /*+INDEX_DESC(bulletin pk_bulletin) */
+                rownum rn, board_no, writer, user_name, title,  post_time, views, recommend
+            FROM bulletin
+                WHERE
+            ]]>
+        <if test="type == 'title'">
+            title LIKE '%'||#{keyword}||'%' AND
+        </if>
+        <if test="type == 'content'">
+            content LIKE '%'||#{keyword}||'%' AND
+        </if>
+        <if test="type == 'writer'">
+            user_name LIKE '%'||#{keyword}||'%' AND
+        </if>
+        <if test="type == 'titleAndContent'">
+            (title LIKE '%'||#{keyword}||'%'
+            OR content LIKE '%'||#{keyword}||'%') AND
+        </if>
+        <![CDATA[
+                rownum <= #{page} * #{amount}
+
+                )
+
+        WHERE rn > (#{page}-1) * #{amount}
+        ]]>
+    </select>
+
+
+    <!-- 게시글 내용 보기-->
+    <select id="getArticleContent" resultMap="bulletinMap">
+        SELECT * FROM bulletin
+        WHERE board_no = #{boardNo}
+    </select>
+
+    <!-- 게시글 수정 -->
+    <update id="modifyArticle">
+        UPDATE bulletin
+        SET writer = #{writer}, user_name = #{userName}, title = #{title}, content = #{content}
+        WHERE board_no = #{boardNo}
+    </update>
+
+    <!-- 조회 수 증가 -->
+    <update id="viewCntUp">
+        UPDATE bulletin
+        SET views = views + 1
+        WHERE board_no = #{boardNo}
+    </update>
+
+    <!-- 총 게시글 수 조회 -->
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM bulletin
+        WHERE board_no > 0
+        <if test="type == 'title'">
+            AND title LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'content'">
+            AND content LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'writer'">
+            AND user_name LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'titleAndContent'">
+            AND (title LIKE '%'||#{keyword}||'%'
+            OR content LIKE '%'||#{keyword}||'%')
+        </if>
+    </select>
+
+    <!-- 추천 수 증가 -->
+    <update id="recCntUp">
+        UPDATE bulletin
+        SET recommend = recommend +1
+        WHERE board_no = #{boardNo}
+    </update>
+
+
+    <!-- keyword 에 따른 검색 기능 -->
+    <select id="listSearch" resultMap="bulletinMap">
+        <![CDATA[
+            SELECT
+                board_no, writer, user_name, title, content, post_time, views, recommend
+            FROM bulletin
+            WHERE board_no > 0
+        ]]>
+        <if test="type == 'title'">
+            AND title LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'content'">
+            AND content LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'writer'">
+            AND user_name LIKE '%'||#{keyword}||'%'
+        </if>
+        <if test="type == 'titleAndContent'">
+            AND (title LIKE '%'||#{keyword}||'%'
+            OR content LIKE '%'||#{keyword}||'%')
+        </if>
+
+    </select>
+
+
+</mapper>
